@@ -14,14 +14,15 @@ export default function UsersPage() {
       <Topbar title="Users" subtitle="Manage all platform members" />
       <main className="flex-1 p-6 space-y-6">
         <div className="grid grid-cols-5 gap-4">
-          {["All", "Students", "Alumni", "Faculty", "Investors"].map((role, i) => (
-            <Card key={role} className={`cursor-pointer transition-shadow hover:shadow-md ${roleFilter === role ? "ring-2 ring-indigo-500" : ""}`}
-              onClick={() => setRoleFilter(role)}>
-              <CardContent className="p-4 text-center">
-                <p className="text-2xl font-bold text-slate-900">0</p>
-                <p className="text-xs text-slate-500 mt-1">{role}</p>
-              </CardContent>
-            </Card>
+          {["All", "Students", "Alumni", "Faculty", "Investors"].map((role) => (
+            <div key={role} onClick={() => setRoleFilter(role)} className="cursor-pointer">
+              <Card className={`transition-shadow hover:shadow-md ${roleFilter === role ? "ring-2 ring-indigo-500" : ""}`}>
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold text-slate-900">0</p>
+                  <p className="text-xs text-slate-500 mt-1">{role}</p>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
 
