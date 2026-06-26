@@ -45,8 +45,7 @@ function LoginForm() {
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
     const role = profile?.role || "student";
     const dest = redirectTo && redirectTo.startsWith(`/${role}`) ? redirectTo : `/${role}`;
-    router.push(dest);
-    router.refresh();
+    window.location.href = dest;
   }
 
   return (
