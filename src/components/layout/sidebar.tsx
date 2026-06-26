@@ -7,7 +7,7 @@ import { UserRole } from "@/lib/types";
 import { createBrowserClient } from "@supabase/ssr";
 import {
   LayoutDashboard, Users, Sparkles, MessageSquare, TrendingUp, Settings,
-  BookOpen, Briefcase, DollarSign, BarChart3, Bell, LogOut,
+  BookOpen, Briefcase, DollarSign, BarChart3, Bell, LogOut, UserCircle,
 } from "lucide-react";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; }
@@ -15,6 +15,7 @@ interface NavItem { label: string; href: string; icon: React.ElementType; }
 const navByRole: Record<UserRole, NavItem[]> = {
   student: [
     { label: "Dashboard", href: "/student", icon: LayoutDashboard },
+    { label: "My Profile", href: "/student/profile", icon: UserCircle },
     { label: "Career GPS", href: "/student/career-gps", icon: Sparkles },
     { label: "My Network", href: "/student/network", icon: Users },
     { label: "Mentors", href: "/student/mentors", icon: BookOpen },
@@ -23,6 +24,7 @@ const navByRole: Record<UserRole, NavItem[]> = {
   ],
   alumni: [
     { label: "Dashboard", href: "/alumni", icon: LayoutDashboard },
+    { label: "My Profile", href: "/alumni/profile", icon: UserCircle },
     { label: "Students to Mentor", href: "/alumni/mentoring", icon: Users },
     { label: "Hiring Matches", href: "/alumni/hiring", icon: Briefcase },
     { label: "Startups", href: "/alumni/startups", icon: TrendingUp },
@@ -30,6 +32,7 @@ const navByRole: Record<UserRole, NavItem[]> = {
   ],
   faculty: [
     { label: "Dashboard", href: "/faculty", icon: LayoutDashboard },
+    { label: "My Profile", href: "/faculty/profile", icon: UserCircle },
     { label: "Research Matches", href: "/faculty/research", icon: BookOpen },
     { label: "Students", href: "/faculty/students", icon: Users },
     { label: "Collaborations", href: "/faculty/collaborations", icon: Sparkles },
@@ -37,6 +40,7 @@ const navByRole: Record<UserRole, NavItem[]> = {
   ],
   investor: [
     { label: "Dashboard", href: "/investor", icon: LayoutDashboard },
+    { label: "My Profile", href: "/investor/profile", icon: UserCircle },
     { label: "Deal Flow", href: "/investor/dealflow", icon: TrendingUp },
     { label: "Startups", href: "/investor/startups", icon: Sparkles },
     { label: "Founders", href: "/investor/founders", icon: Users },
