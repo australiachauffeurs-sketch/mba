@@ -5,7 +5,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createBrowserClient } from "@supabase/ssr";
-import { Sparkles, Target, Route, TrendingUp, CheckCircle, Loader2, Save } from "lucide-react";
+import { Sparkles, Target, Route, TrendingUp, CheckCircle, Loader2, Save, PenLine } from "lucide-react";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -97,6 +97,8 @@ const priorityColor = { High: "bg-red-100 text-red-700", Medium: "bg-amber-100 t
 
 export default function CareerGPSPage() {
   const [selectedGoal, setSelectedGoal] = useState("");
+  const [customGoal, setCustomGoal] = useState("");
+  const [showCustom, setShowCustom] = useState(false);
   const [savedGoal, setSavedGoal] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -106,10 +108,14 @@ export default function CareerGPSPage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: sp } = await supabase.from("student_profiles").select("career_goal").eq("id", user.id).single();
+      const { data: sp } = await supabase.from("student_profiles").select("career_goal, custom_career_goal").eq("id", user.id).single();
       if (sp?.career_goal) {
         setSelectedGoal(sp.career_goal);
         setSavedGoal(sp.career_goal);
+      }
+      if (sp?.custom_career_goal) {
+        setCustomGoal(sp.custom_career_goal);
+        if (sp.career_goal === "custom") setShowCustom(true);
       }
       setLoading(false);
     }
@@ -120,7 +126,12 @@ export default function CareerGPSPage() {
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from("student_profiles").upsert({ id: user.id, career_goal: selectedGoal, updated_at: new Date().toISOString() });
+    await supabase.from("student_profiles").upsert({
+      id: user.id,
+      career_goal: selectedGoal,
+      custom_career_goal: selectedGoal === "custom" ? customGoal : null,
+      updated_at: new Date().toISOString(),
+    });
     setSavedGoal(selectedGoal);
     setSaving(false);
     setSaved(true);
@@ -129,7 +140,9 @@ export default function CareerGPSPage() {
 
   const roadmap = ROADMAPS[selectedGoal] || [];
   const skillGaps = SKILL_GAPS[selectedGoal] || [];
-  const goalLabel = CAREER_GOALS.find(g => g.id === selectedGoal)?.label || "";
+  const goalLabel = selectedGoal === "custom"
+    ? (customGoal || "My Custom Goal")
+    : (CAREER_GOALS.find(g => g.id === selectedGoal)?.label || "");
 
   if (loading) {
     return (
@@ -156,7 +169,7 @@ export default function CareerGPSPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-4 gap-3">
               {CAREER_GOALS.map(goal => (
-                <button key={goal.id} onClick={() => setSelectedGoal(goal.id)}
+                <button key={goal.id} onClick={() => { setSelectedGoal(goal.id); setShowCustom(false); }}
                   className={`text-left p-4 rounded-xl border-2 transition-all ${
                     selectedGoal === goal.id
                       ? "border-indigo-500 bg-indigo-50"
@@ -167,14 +180,49 @@ export default function CareerGPSPage() {
                   <p className="text-xs text-slate-500 mt-0.5 leading-tight">{goal.desc}</p>
                 </button>
               ))}
+              {/* Custom goal card */}
+              <button onClick={() => { setSelectedGoal("custom"); setShowCustom(true); }}
+                className={`text-left p-4 rounded-xl border-2 transition-all ${
+                  selectedGoal === "custom"
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-dashed border-slate-300 bg-white hover:border-indigo-300 hover:bg-slate-50"
+                }`}>
+                <div className="text-2xl mb-2">✏️</div>
+                <p className={`text-sm font-semibold ${selectedGoal === "custom" ? "text-indigo-700" : "text-slate-800"}`}>Custom Goal</p>
+                <p className="text-xs text-slate-500 mt-0.5 leading-tight">Something else? Define your own path</p>
+              </button>
             </div>
+
+            {/* Custom goal input */}
+            {showCustom && (
+              <div className="flex items-start gap-3 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                <PenLine className="w-4 h-4 text-indigo-500 mt-2.5 flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <label className="block text-sm font-medium text-indigo-800">Describe your career goal</label>
+                  <input
+                    value={customGoal}
+                    onChange={e => setCustomGoal(e.target.value)}
+                    placeholder="e.g. Chief Marketing Officer at a Fortune 500, Healthcare entrepreneur, ESG analyst..."
+                    className="w-full px-3 py-2 text-sm border border-indigo-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
+                  <p className="text-xs text-indigo-600">Be specific — this helps AI tailor your roadmap and connections better.</p>
+                </div>
+              </div>
+            )}
+
             {selectedGoal && (
-              <div className="flex items-center gap-3 pt-2">
-                <Button onClick={handleSave} disabled={saving || selectedGoal === savedGoal}>
+              <div className="flex items-center gap-3 pt-1">
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || (selectedGoal === savedGoal) || (selectedGoal === "custom" && !customGoal.trim())}
+                >
                   {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <><Save className="w-4 h-4" /> Set as My Goal</>}
                 </Button>
                 {saved && <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium"><CheckCircle className="w-4 h-4" /> Goal saved!</span>}
                 {selectedGoal === savedGoal && !saved && <span className="text-sm text-slate-400">✓ This is your current goal</span>}
+                {selectedGoal === "custom" && !customGoal.trim() && (
+                  <span className="text-xs text-slate-400">Type your goal above to save it</span>
+                )}
               </div>
             )}
           </CardContent>
@@ -191,7 +239,10 @@ export default function CareerGPSPage() {
                 <div>
                   <h2 className="text-xl font-bold mb-1">Goal: {goalLabel}</h2>
                   <p className="opacity-80 text-sm leading-relaxed max-w-2xl">
-                    AI has mapped your 12-month MBA journey to become a <strong>{goalLabel}</strong>. Every step — mentors, skills, internships, and connections — is optimized for this goal.
+                    {selectedGoal === "custom"
+                      ? `Your custom goal "${goalLabel}" has been saved. Use this roadmap as a starting framework and adapt each step to your specific path.`
+                      : `AI has mapped your 12-month MBA journey to become a ${goalLabel}. Every step — mentors, skills, internships, and connections — is optimized for this goal.`
+                    }
                   </p>
                   <div className="flex gap-3 mt-4">
                     <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
