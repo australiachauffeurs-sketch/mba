@@ -1,66 +1,61 @@
 import { Topbar } from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MetricCard } from "@/components/analytics/metric-card";
-import { RecommendationCard } from "@/components/profiles/recommendation-card";
-import { mockRecommendationsForPriya } from "@/lib/mock-data";
-import { Sparkles, Target, Users, BookOpen, Calendar, ArrowRight } from "lucide-react";
+import { Sparkles, Target, Users, BookOpen, ArrowRight, UserPlus, Briefcase } from "lucide-react";
 import Link from "next/link";
-
-const careerMilestones = [
-  { label: "Profile Complete", done: true },
-  { label: "First mentor connected", done: true },
-  { label: "Internship application", done: false },
-  { label: "Startup pitch ready", done: false },
-  { label: "Funding introduction", done: false },
-];
-
-const upcomingEvents = [
-  { title: "Fintech Innovation Panel", date: "Jul 3", type: "event" },
-  { title: "Mentor call with Sarah Chen", date: "Jul 5", type: "meeting" },
-  { title: "VC Networking Night", date: "Jul 9", type: "event" },
-];
 
 export default function StudentDashboard() {
   return (
     <>
-      <Topbar title="Student Dashboard" subtitle="Welcome back, Priya — here's what AI found for you today" />
+      <Topbar title="Student Dashboard" subtitle="Welcome to UniConnect AI — let's get you started" />
       <main className="flex-1 p-6 space-y-6">
-        {/* AI Career Summary */}
+
+        {/* Welcome banner */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-5 h-5" />
-                <span className="text-sm font-medium opacity-80">AI Career Intelligence — Today</span>
-              </div>
-              <p className="text-lg font-medium leading-relaxed">
-                Your fintech founder profile matched <strong>6 people</strong> in the network this week. Sarah Chen (PayBridge CEO), Robert Tanaka (Horizon Ventures), and Prof. Kumar are your highest-value connections right now.
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-6 h-6 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-lg">Your AI network is ready to activate</p>
+              <p className="text-white/80 text-sm mt-1">
+                Complete your profile so our AI can start matching you with mentors, alumni, investors, and opportunities across the network.
               </p>
-              <div className="flex gap-2 mt-4">
-                <Badge className="bg-white/20 text-white border-0">3 new mentor matches</Badge>
-                <Badge className="bg-white/20 text-white border-0">2 investor introductions pending</Badge>
-                <Badge className="bg-white/20 text-white border-0">1 research opportunity</Badge>
+              <div className="mt-4 flex gap-3">
+                <Link href="/student/mentors" className="text-sm bg-white/20 hover:bg-white/30 transition px-4 py-2 rounded-lg font-medium">
+                  Browse Mentors
+                </Link>
+                <Link href="/student/network" className="text-sm bg-white/10 hover:bg-white/20 transition px-4 py-2 rounded-lg">
+                  Explore Network
+                </Link>
               </div>
             </div>
-            <Link href="/student/career-gps" className="ml-6 flex items-center gap-1 text-sm text-white/80 hover:text-white whitespace-nowrap">
-              Full GPS <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
 
-        {/* Metrics row */}
+        {/* Stats — all zero until real data */}
         <div className="grid grid-cols-4 gap-4">
-          <MetricCard label="Network Connections" value={24} change={12} changeType="increase" icon={Users} />
-          <MetricCard label="AI Match Score" value="91%" description="Top 8% of your cohort" icon={Sparkles} iconColor="text-purple-600" />
-          <MetricCard label="Mentor Sessions" value={3} change={50} changeType="increase" icon={BookOpen} />
-          <MetricCard label="Career Readiness" value="78%" change={8} changeType="increase" icon={Target} />
+          {[
+            { label: "Network Connections", value: "0", icon: Users, color: "text-indigo-600" },
+            { label: "AI Match Score", value: "—", icon: Sparkles, color: "text-purple-600" },
+            { label: "Mentor Sessions", value: "0", icon: BookOpen, color: "text-green-600" },
+            { label: "Career Readiness", value: "—", icon: Target, color: "text-amber-600" },
+          ].map(s => (
+            <Card key={s.label}>
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center">
+                  <s.icon className={`w-5 h-5 ${s.color}`} />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                  <p className="text-xs text-slate-500">{s.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         <div className="grid grid-cols-3 gap-6">
-          {/* Top Recommendations */}
-          <div className="col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
+          {/* Empty recommendations */}
+          <div className="col-span-2">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-slate-900 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-500" />
                 AI-Recommended Connections
@@ -69,54 +64,64 @@ export default function StudentDashboard() {
                 View all <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            {mockRecommendationsForPriya.slice(0, 2).map((rec, i) => (
-              <RecommendationCard key={i} recommendation={rec} />
-            ))}
+            <Card>
+              <CardContent className="p-12 flex flex-col items-center text-center">
+                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4">
+                  <UserPlus className="w-7 h-7 text-indigo-400" />
+                </div>
+                <p className="font-medium text-slate-800">No recommendations yet</p>
+                <p className="text-sm text-slate-500 mt-1 max-w-xs">
+                  Complete your profile with your interests and goals so AI can find the right people for you.
+                </p>
+                <Link href="/student/network" className="mt-4 text-sm text-indigo-600 hover:underline flex items-center gap-1">
+                  Explore the network <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right column */}
           <div className="space-y-4">
-            {/* Career milestones */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Target className="w-4 h-4 text-indigo-500" />
-                  Career Milestones
+                  Getting Started
                 </CardTitle>
-                <CardDescription>Your founder journey progress</CardDescription>
+                <CardDescription>Steps to unlock the platform</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {careerMilestones.map((m) => (
+                {[
+                  { label: "Create your account", done: true },
+                  { label: "Connect with a mentor", done: false },
+                  { label: "Explore opportunities", done: false },
+                  { label: "Join a conversation", done: false },
+                  { label: "Get investor intro", done: false },
+                ].map((m) => (
                   <div key={m.label} className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-xs ${m.done ? "bg-green-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${m.done ? "bg-green-500 text-white" : "bg-slate-100 text-slate-400"}`}>
                       {m.done ? "✓" : ""}
                     </div>
-                    <span className={`text-sm ${m.done ? "text-slate-700 line-through" : "text-slate-600"}`}>{m.label}</span>
+                    <span className={`text-sm ${m.done ? "text-slate-400 line-through" : "text-slate-600"}`}>{m.label}</span>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            {/* Upcoming */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-indigo-500" />
-                  Upcoming
+                  <Briefcase className="w-4 h-4 text-indigo-500" />
+                  Opportunities
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {upcomingEvents.map((e) => (
-                  <div key={e.title} className="flex items-start gap-3">
-                    <div className="text-center min-w-10">
-                      <div className="text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg px-2 py-1">{e.date}</div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-800">{e.title}</p>
-                      <p className="text-xs text-slate-400 capitalize">{e.type}</p>
-                    </div>
-                  </div>
-                ))}
+              <CardContent>
+                <div className="text-center py-4">
+                  <p className="text-sm text-slate-500">No opportunities yet</p>
+                  <Link href="/student/opportunities" className="text-xs text-indigo-600 hover:underline mt-1 block">
+                    Browse all →
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>

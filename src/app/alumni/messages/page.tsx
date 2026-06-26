@@ -1,100 +1,26 @@
 "use client";
-import { useState } from "react";
 import { Topbar } from "@/components/layout/topbar";
-import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Send, Sparkles } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
-const conversations = [
-  { id: "c1", name: "Priya Sharma", role: "student", lastMessage: "Thank you so much! Tuesday at 2 PM works perfectly.", time: "5m ago", unread: 1, online: true },
-  { id: "c2", name: "Marcus Johnson", role: "student", lastMessage: "Would love your advice on my pitch deck.", time: "2h ago", unread: 0, online: false },
-  { id: "c3", name: "Robert Tanaka", role: "investor", lastMessage: "We should co-invest in that fintech startup.", time: "1d ago", unread: 0, online: true },
-  { id: "c4", name: "James Park", role: "alumni", lastMessage: "Great catching up at the reunion!", time: "3d ago", unread: 0, online: false },
-];
-
-const messageHistory: Record<string, { from: "me" | "them"; text: string; time: string }[]> = {
-  c1: [
-    { from: "me", text: "Hi Priya! I saw your profile on UniConnect — your fintech idea is fascinating.", time: "Yesterday 2:30 PM" },
-    { from: "them", text: "Thank you so much Sarah! I'm a huge fan of PayBridge. Would love to learn from your journey.", time: "Yesterday 3:15 PM" },
-    { from: "me", text: "Happy to jump on a call! What time works for you next week?", time: "Yesterday 4:00 PM" },
-    { from: "them", text: "Thank you so much! Tuesday at 2 PM works perfectly.", time: "Just now" },
-  ],
-};
-
-export default function AlumniMessagesPage() {
-  const [active, setActive] = useState("c1");
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState(messageHistory);
-
-  const activeConvo = conversations.find(c => c.id === active)!;
-  const activeMessages = messages[active] || [];
-
-  function send(text: string) {
-    setMessages(p => ({ ...p, [active]: [...(p[active] || []), { from: "me" as const, text, time: "Just now" }] }));
-    setInput("");
-  }
-
+export default function MessagesPage() {
   return (
     <>
       <Topbar title="Messages" subtitle="Your conversations across the network" />
       <main className="flex-1 flex overflow-hidden" style={{ height: "calc(100vh - 73px)" }}>
         <aside className="w-80 border-r border-slate-200 bg-white flex flex-col">
           <div className="p-4 border-b border-slate-100">
-            <input placeholder="Search messages..." className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input placeholder="Search messages..." className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
-          <div className="flex-1 overflow-y-auto">
-            {conversations.map(c => (
-              <button key={c.id} onClick={() => setActive(c.id)}
-                className={`w-full flex items-start gap-3 p-4 text-left border-b border-slate-100 hover:bg-slate-50 transition-colors ${active === c.id ? "bg-purple-50 border-l-2 border-l-purple-600" : ""}`}>
-                <div className="relative flex-shrink-0">
-                  <Avatar name={c.name} size="md" />
-                  {c.online && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between">
-                    <p className="font-medium text-slate-900 text-sm">{c.name}</p>
-                    <span className="text-xs text-slate-400">{c.time}</span>
-                  </div>
-                  <p className="text-xs text-slate-500 truncate mt-0.5">{c.lastMessage}</p>
-                  <div className="flex justify-between mt-1">
-                    <Badge variant="secondary" className="text-xs capitalize">{c.role}</Badge>
-                    {c.unread > 0 && <span className="bg-purple-600 text-white text-xs rounded-full px-1.5 py-0.5">{c.unread}</span>}
-                  </div>
-                </div>
-              </button>
-            ))}
+          <div className="flex-1 flex items-center justify-center p-6 text-center">
+            <div><MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" /><p className="text-sm text-slate-400">No conversations yet</p></div>
           </div>
         </aside>
-        <div className="flex-1 flex flex-col bg-slate-50">
-          <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-3">
-            <Avatar name={activeConvo.name} size="md" />
-            <div>
-              <p className="font-semibold text-slate-900">{activeConvo.name}</p>
-              <p className="text-xs text-slate-500 capitalize">{activeConvo.role}</p>
-            </div>
+        <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 gap-3">
+          <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center">
+            <MessageSquare className="w-8 h-8 text-purple-400" />
           </div>
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {activeMessages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.from === "me" ? "justify-end" : "justify-start"}`}>
-                {msg.from === "them" && <Avatar name={activeConvo.name} size="sm" className="mr-2 flex-shrink-0 mt-1" />}
-                <div className={`max-w-sm flex flex-col ${msg.from === "me" ? "items-end" : "items-start"}`}>
-                  <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${msg.from === "me" ? "bg-purple-600 text-white rounded-tr-sm" : "bg-white text-slate-900 border border-slate-200 rounded-tl-sm shadow-sm"}`}>
-                    {msg.text}
-                  </div>
-                  <span className="text-xs text-slate-400 mt-1 px-1">{msg.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-white border-t border-slate-200 px-6 py-4 flex items-center gap-3">
-            <input value={input} onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && input.trim() && send(input.trim())}
-              placeholder="Type a message..." className="flex-1 px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" />
-            <Button size="md" onClick={() => input.trim() && send(input.trim())} disabled={!input.trim()} className="bg-purple-600 hover:bg-purple-700">
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+          <p className="font-semibold text-slate-800">No messages yet</p>
+          <p className="text-sm text-slate-500 text-center max-w-xs">Students and fellow alumni you connect with will appear here.</p>
         </div>
       </main>
     </>
