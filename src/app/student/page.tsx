@@ -2,11 +2,16 @@ import { Topbar } from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Sparkles, Target, Users, BookOpen, ArrowRight, UserPlus, Briefcase } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
-export default function StudentDashboard() {
+export default async function StudentDashboard() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user!.id).single();
+  const firstName = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
   return (
     <>
-      <Topbar title="Student Dashboard" subtitle="Welcome to UniConnect AI — let's get you started" />
+      <Topbar title="Student Dashboard" subtitle={`Welcome back, ${firstName} — let's get you connected`} />
       <main className="flex-1 p-6 space-y-6">
 
         {/* Welcome banner */}

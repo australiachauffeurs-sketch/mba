@@ -2,11 +2,16 @@ import { Topbar } from "@/components/layout/topbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, Briefcase, Users, DollarSign, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
-export default function InvestorDashboard() {
+export default async function InvestorDashboard() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user!.id).single();
+  const firstName = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
   return (
     <>
-      <Topbar title="Investor Dashboard" subtitle="Discover MBA-founded startups and connect with founders" />
+      <Topbar title="Investor Dashboard" subtitle={`Welcome back, ${firstName} — discover MBA-founded startups`} />
       <main className="flex-1 p-6 space-y-6">
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white">
           <div className="flex items-start gap-3">
