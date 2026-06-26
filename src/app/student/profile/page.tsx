@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { createBrowserClient } from "@supabase/ssr";
 import {
   User, GraduationCap, Briefcase, Heart, Save, CheckCircle,
-  Loader2, AlertCircle, Linkedin, Github, Globe, Phone,
+  Loader2, AlertCircle, Link2, Code2,
 } from "lucide-react";
 
 const supabase = createBrowserClient(
@@ -322,14 +322,14 @@ export default function StudentProfilePage() {
           <div className="grid grid-cols-2 gap-4">
             <Field label="LinkedIn URL">
               <div className="relative">
-                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input value={linkedinUrl} onChange={e => setLinkedinUrl(e.target.value)}
                   placeholder="linkedin.com/in/yourname" className={`${inputCls} pl-9`} />
               </div>
             </Field>
             <Field label="GitHub URL">
               <div className="relative">
-                <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Code2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input value={githubUrl} onChange={e => setGithubUrl(e.target.value)}
                   placeholder="github.com/yourname" className={`${inputCls} pl-9`} />
               </div>
