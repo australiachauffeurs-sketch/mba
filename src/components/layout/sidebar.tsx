@@ -9,6 +9,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import {
   LayoutDashboard, Users, Sparkles, MessageSquare, TrendingUp, Settings,
   BookOpen, Briefcase, DollarSign, BarChart3, Bell, LogOut, UserCircle,
+  Calendar, Handshake,
 } from "lucide-react";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; }
@@ -22,11 +23,14 @@ const navByRole: Record<UserRole, NavItem[]> = {
     { label: "My Network", href: "/student/network", icon: Users },
     { label: "Mentors", href: "/student/mentors", icon: BookOpen },
     { label: "Opportunities", href: "/student/opportunities", icon: Briefcase },
+    { label: "Events & Clubs", href: "/student/events", icon: Calendar },
+    { label: "Co-founders", href: "/student/cofounders", icon: Handshake },
     { label: "Messages", href: "/student/messages", icon: MessageSquare },
   ],
   alumni: [
     { label: "Dashboard", href: "/alumni", icon: LayoutDashboard },
     { label: "My Profile", href: "/alumni/profile", icon: UserCircle },
+    { label: "AI Advisor", href: "/alumni/ai-recommendations", icon: Sparkles },
     { label: "Students to Mentor", href: "/alumni/mentoring", icon: Users },
     { label: "Hiring Matches", href: "/alumni/hiring", icon: Briefcase },
     { label: "Startups", href: "/alumni/startups", icon: TrendingUp },
@@ -35,14 +39,16 @@ const navByRole: Record<UserRole, NavItem[]> = {
   faculty: [
     { label: "Dashboard", href: "/faculty", icon: LayoutDashboard },
     { label: "My Profile", href: "/faculty/profile", icon: UserCircle },
+    { label: "AI Advisor", href: "/faculty/ai-recommendations", icon: Sparkles },
     { label: "Research Matches", href: "/faculty/research", icon: BookOpen },
     { label: "Students", href: "/faculty/students", icon: Users },
-    { label: "Collaborations", href: "/faculty/collaborations", icon: Sparkles },
+    { label: "Collaborations", href: "/faculty/collaborations", icon: TrendingUp },
     { label: "Messages", href: "/faculty/messages", icon: MessageSquare },
   ],
   investor: [
     { label: "Dashboard", href: "/investor", icon: LayoutDashboard },
     { label: "My Profile", href: "/investor/profile", icon: UserCircle },
+    { label: "AI Advisor", href: "/investor/ai-recommendations", icon: Sparkles },
     { label: "Deal Flow", href: "/investor/dealflow", icon: TrendingUp },
     { label: "Startups", href: "/investor/startups", icon: Sparkles },
     { label: "Founders", href: "/investor/founders", icon: Users },
