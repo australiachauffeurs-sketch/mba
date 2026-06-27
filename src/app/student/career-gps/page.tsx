@@ -5,7 +5,10 @@ import { Topbar } from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createBrowserClient } from "@supabase/ssr";
-import { Sparkles, Target, Route, TrendingUp, CheckCircle, Loader2, Save, PenLine } from "lucide-react";
+import {
+  Sparkles, Target, Route, TrendingUp, CheckCircle,
+  Loader2, Save, PenLine, Pencil, ArrowRight,
+} from "lucide-react";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -46,7 +49,7 @@ const ROADMAPS: Record<string, { phase: string; label: string; actions: string[]
     { phase: "Month 10–12", label: "Convert & Close", actions: ["Get full-time return offer", "Choose group (M&A, TMT, Healthcare, etc.)", "Start networking in your target group"] },
   ],
   vc: [
-    { phase: "Month 1–2", label: "Learn the Ecosystem", actions: ["Read 'Venture Deals' and 'Zero to One'", "Connect with investor alumni (Robert Tanaka, etc.)", "Follow 50 VCs and founders on LinkedIn"] },
+    { phase: "Month 1–2", label: "Learn the Ecosystem", actions: ["Read 'Venture Deals' and 'Zero to One'", "Connect with investor alumni", "Follow 50 VCs and founders on LinkedIn"] },
     { phase: "Month 3–4", label: "Source & Analyse", actions: ["Shadow a VC through alumni connection", "Analyse 10 startups using VC framework", "Write investment memos on 3 companies"] },
     { phase: "Month 5–6", label: "Get Experience", actions: ["Apply for VC internship roles", "Join your school's student investment fund", "Attend Demo Days (YC, Antler, etc.)"] },
     { phase: "Month 7–9", label: "Build Thesis", actions: ["Pick a sector you want to invest in", "Build a deal pipeline spreadsheet", "Refer 1 deal to a VC firm through your network"] },
@@ -67,7 +70,7 @@ const ROADMAPS: Record<string, { phase: string; label: string; actions: string[]
     { phase: "Month 10–12", label: "Build Career Capital", actions: ["Convert to full-time strategy role", "Work towards VP Strategy or Chief of Staff", "Build network inside your company"] },
   ],
   private_equity: [
-    { phase: "Month 1–2", label: "Foundation", actions: ["Master LBO modeling", "Connect with alumni in PE (at MFs, UMM, MM)", "Study 5 recent PE deals in depth"] },
+    { phase: "Month 1–2", label: "Foundation", actions: ["Master LBO modeling", "Connect with alumni in PE", "Study 5 recent PE deals in depth"] },
     { phase: "Month 3–4", label: "Technical Mastery", actions: ["Build full LBO models from scratch", "Learn deal sourcing and due diligence process", "Practice PE case studies weekly"] },
     { phase: "Month 5–6", label: "Recruiting (Off-cycle)", actions: ["PE recruiting starts early — network aggressively", "Prepare deal experience and investment thesis", "Get warm intros through banking or alumni network"] },
     { phase: "Month 7–9", label: "Process & Interviews", actions: ["Go through PE interview processes", "Prepare 'deal I worked on' stories", "Model a take-home LBO in 3 hours"] },
@@ -96,12 +99,11 @@ const SKILL_GAPS: Record<string, { skill: string; priority: "High" | "Medium" | 
 const priorityColor = { High: "bg-red-100 text-red-700", Medium: "bg-amber-100 text-amber-700", Low: "bg-green-100 text-green-700" };
 
 export default function CareerGPSPage() {
+  const [step, setStep] = useState<"select" | "roadmap">("select");
   const [selectedGoal, setSelectedGoal] = useState("");
   const [customGoal, setCustomGoal] = useState("");
   const [showCustom, setShowCustom] = useState(false);
-  const [savedGoal, setSavedGoal] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -111,8 +113,8 @@ export default function CareerGPSPage() {
       const { data: sp } = await supabase.from("student_profiles").select("career_goal, custom_career_goal").eq("id", user.id).single();
       if (sp?.career_goal) {
         setSelectedGoal(sp.career_goal);
-        setSavedGoal(sp.career_goal);
         if (sp.career_goal === "custom") setShowCustom(true);
+        setStep("roadmap"); // already has a goal → skip to roadmap
       }
       if (sp?.custom_career_goal) {
         setCustomGoal(sp.custom_career_goal);
@@ -132,210 +134,266 @@ export default function CareerGPSPage() {
       custom_career_goal: selectedGoal === "custom" ? customGoal : null,
       updated_at: new Date().toISOString(),
     });
-    setSavedGoal(selectedGoal);
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setStep("roadmap");
   }
 
   const roadmap = ROADMAPS[selectedGoal] || [];
   const skillGaps = SKILL_GAPS[selectedGoal] || [];
-  const goalLabel = selectedGoal === "custom"
-    ? (customGoal || "My Custom Goal")
-    : (CAREER_GOALS.find(g => g.id === selectedGoal)?.label || "");
+  const goalMeta = CAREER_GOALS.find(g => g.id === selectedGoal);
+  const goalLabel = selectedGoal === "custom" ? (customGoal || "My Custom Goal") : (goalMeta?.label || "");
+  const goalEmoji = selectedGoal === "custom" ? "✏️" : (goalMeta?.emoji || "🎯");
 
   if (loading) {
     return (
       <>
         <Topbar title="Career GPS" subtitle="Your personalized AI-powered degree navigator" />
-        <main className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 text-indigo-500 animate-spin" /></main>
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+        </main>
       </>
     );
   }
 
+  // ── STEP 1: Goal Selection ──────────────────────────────────────────────────
+  if (step === "select") {
+    return (
+      <>
+        <Topbar title="Career GPS" subtitle="Your personalized AI-powered degree navigator" />
+        <main className="flex-1 p-6 max-w-5xl">
+          {/* Step indicator */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center">1</div>
+              <span className="text-sm font-semibold text-indigo-700">Set Your Goal</span>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-300" />
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 text-xs font-bold flex items-center justify-center">2</div>
+              <span className="text-sm text-slate-400">View Roadmap</span>
+            </div>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Target className="w-5 h-5 text-indigo-500" />
+                What's your career goal after MBA?
+              </CardTitle>
+              <p className="text-sm text-slate-500 mt-1">Choose one — AI will build your personalized 12-month action plan.</p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid grid-cols-3 gap-3">
+                {CAREER_GOALS.map(goal => (
+                  <button key={goal.id}
+                    onClick={() => { setSelectedGoal(goal.id); setShowCustom(false); }}
+                    className={`text-left p-4 rounded-xl border-2 transition-all ${
+                      selectedGoal === goal.id
+                        ? "border-indigo-500 bg-indigo-50 shadow-sm"
+                        : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50"
+                    }`}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl flex-shrink-0">{goal.emoji}</span>
+                      <div>
+                        <p className={`text-sm font-semibold ${selectedGoal === goal.id ? "text-indigo-700" : "text-slate-800"}`}>{goal.label}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 leading-snug">{goal.desc}</p>
+                      </div>
+                      {selectedGoal === goal.id && (
+                        <CheckCircle className="w-4 h-4 text-indigo-500 ml-auto flex-shrink-0 mt-0.5" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+
+                {/* Custom goal */}
+                <button onClick={() => { setSelectedGoal("custom"); setShowCustom(true); }}
+                  className={`text-left p-4 rounded-xl border-2 transition-all ${
+                    selectedGoal === "custom"
+                      ? "border-indigo-500 bg-indigo-50 shadow-sm"
+                      : "border-dashed border-slate-300 bg-white hover:border-indigo-300 hover:bg-slate-50"
+                  }`}>
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">✏️</span>
+                    <div>
+                      <p className={`text-sm font-semibold ${selectedGoal === "custom" ? "text-indigo-700" : "text-slate-800"}`}>Something else</p>
+                      <p className="text-xs text-slate-500 mt-0.5 leading-snug">Define your own custom career path</p>
+                    </div>
+                    {selectedGoal === "custom" && (
+                      <CheckCircle className="w-4 h-4 text-indigo-500 ml-auto flex-shrink-0 mt-0.5" />
+                    )}
+                  </div>
+                </button>
+              </div>
+
+              {/* Custom text input */}
+              {showCustom && (
+                <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200 space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-indigo-800">
+                    <PenLine className="w-4 h-4" /> Describe your goal
+                  </label>
+                  <input
+                    value={customGoal}
+                    onChange={e => setCustomGoal(e.target.value)}
+                    placeholder="e.g. CMO at a Fortune 500, Healthcare entrepreneur, ESG analyst…"
+                    className="w-full px-3 py-2 text-sm border border-indigo-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    autoFocus
+                  />
+                  <p className="text-xs text-indigo-600">Be specific — AI uses this to tailor your roadmap and surface the right connections.</p>
+                </div>
+              )}
+
+              {/* CTA */}
+              <div className="pt-2">
+                <Button
+                  size="lg"
+                  onClick={handleSave}
+                  disabled={!selectedGoal || saving || (selectedGoal === "custom" && !customGoal.trim())}
+                  className="gap-2"
+                >
+                  {saving
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating roadmap…</>
+                    : <><Sparkles className="w-4 h-4" /> Generate My Roadmap <ArrowRight className="w-4 h-4" /></>
+                  }
+                </Button>
+                {!selectedGoal && <p className="text-xs text-slate-400 mt-2">Select a goal above to continue</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </>
+    );
+  }
+
+  // ── STEP 2: Roadmap View ────────────────────────────────────────────────────
   return (
     <>
       <Topbar title="Career GPS" subtitle="Your personalized AI-powered degree navigator" />
       <main className="flex-1 p-6 space-y-6">
 
-        {/* Goal selector */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Target className="w-4 h-4 text-indigo-500" />
-              What's your career goal after MBA?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-4 gap-3">
-              {CAREER_GOALS.map(goal => (
-                <button key={goal.id} onClick={() => { setSelectedGoal(goal.id); setShowCustom(false); }}
-                  className={`text-left p-4 rounded-xl border-2 transition-all ${
-                    selectedGoal === goal.id
-                      ? "border-indigo-500 bg-indigo-50"
-                      : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50"
-                  }`}>
-                  <div className="text-2xl mb-2">{goal.emoji}</div>
-                  <p className={`text-sm font-semibold ${selectedGoal === goal.id ? "text-indigo-700" : "text-slate-800"}`}>{goal.label}</p>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-tight">{goal.desc}</p>
-                </button>
-              ))}
-              {/* Custom goal card */}
-              <button onClick={() => { setSelectedGoal("custom"); setShowCustom(true); }}
-                className={`text-left p-4 rounded-xl border-2 transition-all ${
-                  selectedGoal === "custom"
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-dashed border-slate-300 bg-white hover:border-indigo-300 hover:bg-slate-50"
-                }`}>
-                <div className="text-2xl mb-2">✏️</div>
-                <p className={`text-sm font-semibold ${selectedGoal === "custom" ? "text-indigo-700" : "text-slate-800"}`}>Custom Goal</p>
-                <p className="text-xs text-slate-500 mt-0.5 leading-tight">Something else? Define your own path</p>
-              </button>
+        {/* Goal summary bar */}
+        <div className="flex items-center justify-between bg-white border border-slate-200 rounded-2xl px-5 py-3.5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-xl">{goalEmoji}</div>
+            <div>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Your Career Goal</p>
+              <p className="text-base font-bold text-slate-900">{goalLabel}</p>
             </div>
+            <span className="ml-2 flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full font-medium">
+              <CheckCircle className="w-3.5 h-3.5" /> Goal set
+            </span>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setStep("select")} className="gap-1.5">
+            <Pencil className="w-3.5 h-3.5" /> Change Goal
+          </Button>
+        </div>
 
-            {/* Custom goal input */}
-            {showCustom && (
-              <div className="flex items-start gap-3 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                <PenLine className="w-4 h-4 text-indigo-500 mt-2.5 flex-shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <label className="block text-sm font-medium text-indigo-800">Describe your career goal</label>
-                  <input
-                    value={customGoal}
-                    onChange={e => setCustomGoal(e.target.value)}
-                    placeholder="e.g. Chief Marketing Officer at a Fortune 500, Healthcare entrepreneur, ESG analyst..."
-                    className="w-full px-3 py-2 text-sm border border-indigo-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                  />
-                  <p className="text-xs text-indigo-600">Be specific — this helps AI tailor your roadmap and connections better.</p>
+        {/* Roadmap banner */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl">{goalEmoji}</div>
+            <div>
+              <h2 className="text-xl font-bold mb-1">Your 12-Month Roadmap</h2>
+              <p className="opacity-80 text-sm leading-relaxed max-w-2xl">
+                {selectedGoal === "custom"
+                  ? `Customized plan for: "${goalLabel}". Use this as a framework and adapt each step to your specific path.`
+                  : `AI has mapped every step of your MBA journey toward becoming a ${goalLabel} — mentors, skills, internships, and key milestones.`}
+              </p>
+              <div className="flex gap-3 mt-4">
+                <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                  <div className="text-2xl font-bold">{roadmap.length || 5}</div>
+                  <div className="text-xs opacity-80">Phases</div>
+                </div>
+                <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                  <div className="text-2xl font-bold">{skillGaps.filter(s => s.priority === "High").length || 3}</div>
+                  <div className="text-xs opacity-80">Priority skills</div>
+                </div>
+                <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
+                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-xs opacity-80">Month plan</div>
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+        </div>
 
-            {selectedGoal && (
-              <div className="flex items-center gap-3 pt-1">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving || (selectedGoal === savedGoal) || (selectedGoal === "custom" && !customGoal.trim())}
-                >
-                  {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <><Save className="w-4 h-4" /> Set as My Goal</>}
-                </Button>
-                {saved && <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium"><CheckCircle className="w-4 h-4" /> Goal saved!</span>}
-                {selectedGoal === savedGoal && !saved && <span className="text-sm text-slate-400">✓ This is your current goal</span>}
-                {selectedGoal === "custom" && !customGoal.trim() && (
-                  <span className="text-xs text-slate-400">Type your goal above to save it</span>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {selectedGoal ? (
-          <>
-            {/* Banner */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl">
-                  {CAREER_GOALS.find(g => g.id === selectedGoal)?.emoji}
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold mb-1">Goal: {goalLabel}</h2>
-                  <p className="opacity-80 text-sm leading-relaxed max-w-2xl">
-                    {selectedGoal === "custom"
-                      ? `Your custom goal "${goalLabel}" has been saved. Use this roadmap as a starting framework and adapt each step to your specific path.`
-                      : `AI has mapped your 12-month MBA journey to become a ${goalLabel}. Every step — mentors, skills, internships, and connections — is optimized for this goal.`
-                    }
-                  </p>
-                  <div className="flex gap-3 mt-4">
-                    <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-                      <div className="text-2xl font-bold">{roadmap.length}</div>
-                      <div className="text-xs opacity-80">Phases</div>
+        <div className="grid grid-cols-3 gap-6">
+          {/* Roadmap phases */}
+          <div className="col-span-2 space-y-3">
+            <h2 className="font-semibold text-slate-900 flex items-center gap-2">
+              <Route className="w-4 h-4 text-indigo-500" /> Action Plan
+            </h2>
+            {roadmap.length > 0 ? roadmap.map((phase, i) => (
+              <Card key={i}>
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${i === 0 ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500"}`}>
+                      {i + 1}
                     </div>
-                    <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-                      <div className="text-2xl font-bold">{skillGaps.filter(s => s.priority === "High").length}</div>
-                      <div className="text-xs opacity-80">High priority skills</div>
-                    </div>
-                    <div className="bg-white/20 rounded-xl px-4 py-2 text-center">
-                      <div className="text-2xl font-bold">12</div>
-                      <div className="text-xs opacity-80">Month roadmap</div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs text-slate-400 font-medium bg-slate-100 px-2 py-0.5 rounded-full">{phase.phase}</span>
+                        <span className="font-semibold text-slate-900">{phase.label}</span>
+                        {i === 0 && <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">Start here</span>}
+                      </div>
+                      <ul className="space-y-1.5">
+                        {phase.actions.map(action => (
+                          <li key={action} className="text-sm text-slate-600 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full flex-shrink-0" />
+                            {action}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
+                </CardContent>
+              </Card>
+            )) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Sparkles className="w-8 h-8 text-indigo-300 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-slate-700">Custom roadmap</p>
+                  <p className="text-sm text-slate-500 mt-1">Your personalized steps will appear here as AI matches you with the right mentors and opportunities.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
-            <div className="grid grid-cols-3 gap-6">
-              {/* Roadmap */}
-              <div className="col-span-2 space-y-4">
-                <h2 className="font-semibold text-slate-900 flex items-center gap-2">
-                  <Route className="w-4 h-4 text-indigo-500" />
-                  12-Month Roadmap
-                </h2>
-                <div className="space-y-3">
-                  {roadmap.map((phase, i) => (
-                    <Card key={i}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${i === 0 ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500"}`}>
-                            {i + 1}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-xs text-slate-400 font-medium">{phase.phase}</span>
-                              <span className="font-semibold text-slate-900">{phase.label}</span>
-                              {i === 0 && <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">Start here</span>}
-                            </div>
-                            <ul className="space-y-1.5">
-                              {phase.actions.map((action) => (
-                                <li key={action} className="text-sm text-slate-600 flex items-center gap-2">
-                                  <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full flex-shrink-0" />
-                                  {action}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+          {/* Skill gaps */}
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-indigo-500" /> Skill Gaps to Close
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {skillGaps.length > 0 ? skillGaps.map(s => (
+                  <div key={s.skill} className="flex items-center justify-between gap-2">
+                    <p className="text-sm text-slate-700">{s.skill}</p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${priorityColor[s.priority]}`}>
+                      {s.priority}
+                    </span>
+                  </div>
+                )) : (
+                  <p className="text-sm text-slate-500">Skill analysis will populate as your profile grows.</p>
+                )}
+              </CardContent>
+            </Card>
 
-              {/* Skill Gaps */}
-              <div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-indigo-500" />
-                      Skill Gap Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-xs text-slate-500">Skills to develop for <strong>{goalLabel}</strong></p>
-                    {skillGaps.map(s => (
-                      <div key={s.skill} className="flex items-center justify-between gap-2">
-                        <p className="text-sm text-slate-700">{s.skill}</p>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${priorityColor[s.priority]}`}>
-                          {s.priority}
-                        </span>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </>
-        ) : (
-          <Card>
-            <CardContent className="p-12 flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4">
-                <Sparkles className="w-8 h-8 text-indigo-400" />
-              </div>
-              <p className="font-semibold text-slate-800 text-lg">Select a career goal above</p>
-              <p className="text-sm text-slate-500 mt-2 max-w-sm">
-                Choose what you want to become after your MBA and AI will generate your personalized 12-month action plan.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+            <Card className="border-indigo-100 bg-indigo-50/50">
+              <CardContent className="p-4">
+                <p className="text-sm font-medium text-indigo-800 flex items-center gap-1.5 mb-1">
+                  <Sparkles className="w-3.5 h-3.5" /> Not the right goal?
+                </p>
+                <p className="text-xs text-indigo-700 mb-3">You can update your career goal anytime.</p>
+                <Button variant="outline" size="sm" className="w-full gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+                  onClick={() => setStep("select")}>
+                  <Pencil className="w-3.5 h-3.5" /> Edit My Goal
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </main>
     </>
   );
