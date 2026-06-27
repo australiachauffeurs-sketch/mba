@@ -112,10 +112,10 @@ export default function CareerGPSPage() {
       if (sp?.career_goal) {
         setSelectedGoal(sp.career_goal);
         setSavedGoal(sp.career_goal);
+        if (sp.career_goal === "custom") setShowCustom(true);
       }
       if (sp?.custom_career_goal) {
         setCustomGoal(sp.custom_career_goal);
-        if (sp.career_goal === "custom") setShowCustom(true);
       }
       setLoading(false);
     }
