@@ -112,16 +112,19 @@ function buildStaticRec(goal: string, name: string, goalLabel: string): AIRecomm
   return { ...base, studentName: name, goalLabel, generatedAt: new Date().toISOString(), isAIGenerated: false };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get("refresh") === "true";
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Fetch profile data
+    // Fetch profile data (include cached recs)
     const [{ data: profile }, { data: sp }] = await Promise.all([
       supabase.from("profiles").select("full_name, bio").eq("id", user.id).single(),
-      supabase.from("student_profiles").select("program, specialization, career_goal, custom_career_goal, skills, career_interests, interests, looking_for, work_experience, gpa, batch_year").eq("id", user.id).single(),
+      supabase.from("student_profiles").select("program, specialization, career_goal, custom_career_goal, skills, career_interests, interests, looking_for, work_experience, gpa, batch_year, ai_recommendations, ai_recommendations_at").eq("id", user.id).single(),
     ]);
 
     const name = profile?.full_name?.split(" ")[0] || "Student";
@@ -133,11 +136,25 @@ export async function GET() {
       return NextResponse.json({ error: "no_goal", message: "Student hasn't set a career goal yet" }, { status: 200 });
     }
 
+    // Return cached recommendations unless refresh is forced
+    if (!forceRefresh && sp?.ai_recommendations) {
+      const cached = sp.ai_recommendations as AIRecommendationsResponse;
+      cached.studentName = name;
+      cached.goalLabel = goalLabel;
+      return NextResponse.json(cached);
+    }
+
     const apiKey = process.env.OPENAI_API_KEY;
     const hasValidKey = apiKey && apiKey.length > 10 && !apiKey.startsWith("sk-placeholder");
 
     if (!hasValidKey) {
-      return NextResponse.json(buildStaticRec(goal, name, goalLabel));
+      const staticRec = buildStaticRec(goal, name, goalLabel);
+      // Save static recs to DB so refresh doesn't lose them
+      await supabase.from("student_profiles").update({
+        ai_recommendations: staticRec,
+        ai_recommendations_at: new Date().toISOString(),
+      }).eq("id", user.id);
+      return NextResponse.json(staticRec);
     }
 
     // Build AI prompt context
@@ -207,6 +224,12 @@ Rules:
     result.generatedAt = new Date().toISOString();
     result.studentName = name;
     result.goalLabel = goalLabel;
+
+    // Persist to DB so it survives page refreshes
+    await supabase.from("student_profiles").update({
+      ai_recommendations: result,
+      ai_recommendations_at: result.generatedAt,
+    }).eq("id", user.id);
 
     return NextResponse.json(result);
   } catch (err) {

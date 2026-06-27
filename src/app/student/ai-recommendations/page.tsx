@@ -94,7 +94,8 @@ export default function AIRecommendationsPage() {
     else setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/ai/recommendations");
+      const url = isRefresh ? "/api/ai/recommendations?refresh=true" : "/api/ai/recommendations";
+      const res = await fetch(url);
       const json = await res.json();
       if (json.error === "no_goal") { setError("no_goal"); return; }
       if (json.error) { setError("failed"); return; }

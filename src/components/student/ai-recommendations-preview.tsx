@@ -13,7 +13,7 @@ export function AIRecommendationsPreview({ hasGoal }: { hasGoal: boolean }) {
   useEffect(() => {
     if (!hasGoal) return;
     setLoading(true);
-    fetch("/api/ai/recommendations")
+    fetch("/api/ai/recommendations") // returns cached DB data if available, no re-generation
       .then(r => r.json())
       .then(json => { if (!json.error) setData(json); })
       .finally(() => setLoading(false));
