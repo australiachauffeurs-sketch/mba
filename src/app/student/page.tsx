@@ -1,14 +1,20 @@
 import { Topbar } from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Sparkles, Target, Users, BookOpen, ArrowRight, UserPlus, Briefcase } from "lucide-react";
+import { Sparkles, Target, Users, BookOpen, ArrowRight, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { AIRecommendationsPreview } from "@/components/student/ai-recommendations-preview";
 
 export default async function StudentDashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user!.id).single();
+  const [{ data: profile }, { data: sp }] = await Promise.all([
+    supabase.from("profiles").select("full_name").eq("id", user!.id).single(),
+    supabase.from("student_profiles").select("career_goal").eq("id", user!.id).single(),
+  ]);
   const firstName = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const hasGoal = !!sp?.career_goal;
+
   return (
     <>
       <Topbar title="Student Dashboard" subtitle={`Welcome back, ${firstName} — let's get you connected`} />
@@ -19,29 +25,46 @@ export default async function StudentDashboard() {
           <div className="flex items-start gap-3">
             <Sparkles className="w-6 h-6 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-lg">Your AI network is ready to activate</p>
+              <p className="font-semibold text-lg">
+                {hasGoal ? "Your AI network is active" : "Your AI network is ready to activate"}
+              </p>
               <p className="text-white/80 text-sm mt-1">
-                Complete your profile so our AI can start matching you with mentors, alumni, investors, and opportunities across the network.
+                {hasGoal
+                  ? "AI is matching you with alumni, mentors, and opportunities based on your career goal."
+                  : "Complete your profile and set a career goal so AI can start matching you with the right people."}
               </p>
               <div className="mt-4 flex gap-3">
-                <Link href="/student/mentors" className="text-sm bg-white/20 hover:bg-white/30 transition px-4 py-2 rounded-lg font-medium">
-                  Browse Mentors
-                </Link>
-                <Link href="/student/network" className="text-sm bg-white/10 hover:bg-white/20 transition px-4 py-2 rounded-lg">
-                  Explore Network
-                </Link>
+                {hasGoal ? (
+                  <>
+                    <Link href="/student/ai-recommendations" className="text-sm bg-white text-indigo-600 hover:bg-white/90 transition px-4 py-2 rounded-lg font-semibold">
+                      View AI Recommendations
+                    </Link>
+                    <Link href="/student/career-gps" className="text-sm bg-white/10 hover:bg-white/20 transition px-4 py-2 rounded-lg">
+                      View Roadmap
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/student/career-gps" className="text-sm bg-white text-indigo-600 hover:bg-white/90 transition px-4 py-2 rounded-lg font-semibold">
+                      Set Career Goal
+                    </Link>
+                    <Link href="/student/profile" className="text-sm bg-white/10 hover:bg-white/20 transition px-4 py-2 rounded-lg">
+                      Complete Profile
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats — all zero until real data */}
+        {/* Stats */}
         <div className="grid grid-cols-4 gap-4">
           {[
             { label: "Network Connections", value: "0", icon: Users, color: "text-indigo-600" },
-            { label: "AI Match Score", value: "—", icon: Sparkles, color: "text-purple-600" },
+            { label: "AI Match Score", value: hasGoal ? "Active" : "—", icon: Sparkles, color: "text-purple-600" },
             { label: "Mentor Sessions", value: "0", icon: BookOpen, color: "text-green-600" },
-            { label: "Career Readiness", value: "—", icon: Target, color: "text-amber-600" },
+            { label: "Career Readiness", value: hasGoal ? "In progress" : "—", icon: Target, color: "text-amber-600" },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="p-5 flex items-center gap-4">
@@ -49,7 +72,7 @@ export default async function StudentDashboard() {
                   <s.icon className={`w-5 h-5 ${s.color}`} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                  <p className="text-xl font-bold text-slate-900">{s.value}</p>
                   <p className="text-xs text-slate-500">{s.label}</p>
                 </div>
               </CardContent>
@@ -58,31 +81,20 @@ export default async function StudentDashboard() {
         </div>
 
         <div className="grid grid-cols-3 gap-6">
-          {/* Empty recommendations */}
+          {/* AI Recommendations preview — client component that fetches live */}
           <div className="col-span-2">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-slate-900 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-500" />
                 AI-Recommended Connections
               </h2>
-              <Link href="/student/mentors" className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                View all <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            <Card>
-              <CardContent className="p-12 flex flex-col items-center text-center">
-                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4">
-                  <UserPlus className="w-7 h-7 text-indigo-400" />
-                </div>
-                <p className="font-medium text-slate-800">No recommendations yet</p>
-                <p className="text-sm text-slate-500 mt-1 max-w-xs">
-                  Complete your profile with your interests and goals so AI can find the right people for you.
-                </p>
-                <Link href="/student/network" className="mt-4 text-sm text-indigo-600 hover:underline flex items-center gap-1">
-                  Explore the network <ArrowRight className="w-3.5 h-3.5" />
+              {hasGoal && (
+                <Link href="/student/ai-recommendations" className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                  See all <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-              </CardContent>
-            </Card>
+              )}
+            </div>
+            <AIRecommendationsPreview hasGoal={hasGoal} />
           </div>
 
           {/* Right column */}
@@ -98,9 +110,9 @@ export default async function StudentDashboard() {
               <CardContent className="space-y-3">
                 {[
                   { label: "Create your account", done: true },
+                  { label: "Set your career goal", done: hasGoal },
                   { label: "Connect with a mentor", done: false },
                   { label: "Explore opportunities", done: false },
-                  { label: "Join a conversation", done: false },
                   { label: "Get investor intro", done: false },
                 ].map((m) => (
                   <div key={m.label} className="flex items-center gap-3">

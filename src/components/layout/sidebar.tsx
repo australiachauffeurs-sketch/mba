@@ -17,6 +17,7 @@ const navByRole: Record<UserRole, NavItem[]> = {
     { label: "Dashboard", href: "/student", icon: LayoutDashboard },
     { label: "My Profile", href: "/student/profile", icon: UserCircle },
     { label: "Career GPS", href: "/student/career-gps", icon: Sparkles },
+    { label: "AI Advisor", href: "/student/ai-recommendations", icon: TrendingUp },
     { label: "My Network", href: "/student/network", icon: Users },
     { label: "Mentors", href: "/student/mentors", icon: BookOpen },
     { label: "Opportunities", href: "/student/opportunities", icon: Briefcase },
