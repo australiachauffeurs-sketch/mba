@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn, getRoleBadgeColor } from "@/lib/utils";
 import { UserRole } from "@/lib/types";
 import { createBrowserClient } from "@supabase/ssr";
@@ -68,16 +69,33 @@ export function Sidebar({ role, userName, userEmail }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const navItems = navByRole[role];
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
+  useEffect(() => {
+    fetch("/api/notifications")
+      .then(r => r.ok ? r.json() : [])
+      .then((data: { read: boolean }[]) => {
+        setUnreadCount(data.filter(n => !n.read).length);
+      })
+      .catch(() => {});
+  }, []);
+
   async function handleLogout() {
     await supabase.auth.signOut();
     router.push("/auth/login");
     router.refresh();
+  }
+
+  async function handleNotificationsClick() {
+    if (unreadCount > 0) {
+      await fetch("/api/notifications", { method: "PATCH" });
+      setUnreadCount(0);
+    }
   }
 
   const initials = userName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
@@ -133,10 +151,15 @@ export function Sidebar({ role, userName, userEmail }: SidebarProps) {
       {/* Bottom */}
       <div className="p-3 border-t border-slate-100 space-y-0.5">
         <Link href="/notifications"
+          onClick={handleNotificationsClick}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">
           <Bell className="w-4 h-4" />
           Notifications
-          <span className="ml-auto bg-indigo-600 text-white text-xs rounded-full px-1.5 py-0.5">3</span>
+          {unreadCount > 0 && (
+            <span className="ml-auto bg-indigo-600 text-white text-xs rounded-full px-1.5 py-0.5">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
         </Link>
         <button onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors">
