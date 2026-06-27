@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
-  Sparkles, Loader2, RefreshCw, AlertCircle, ArrowRight,
+  Sparkles, Loader2, AlertCircle, ArrowRight,
   Users, BookOpen, Lightbulb, Building2, FlaskConical, Briefcase, Handshake, Zap,
 } from "lucide-react";
 import type { AIRecommendationsResponse, RecommendationCategory } from "@/app/api/ai/recommendations/route";
@@ -87,28 +87,18 @@ export default function AIRecommendationsPage() {
   const [data, setData] = useState<AIRecommendationsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<"no_goal" | "failed" | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
 
-  async function fetchRecs(isRefresh = false) {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-    try {
-      const url = isRefresh ? "/api/ai/recommendations?refresh=true" : "/api/ai/recommendations";
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json.error === "no_goal") { setError("no_goal"); return; }
-      if (json.error) { setError("failed"); return; }
-      setData(json);
-    } catch {
-      setError("failed");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }
-
-  useEffect(() => { fetchRecs(); }, []);
+  useEffect(() => {
+    fetch("/api/ai/recommendations")
+      .then(r => r.json())
+      .then(json => {
+        if (json.error === "no_goal") { setError("no_goal"); return; }
+        if (json.error) { setError("failed"); return; }
+        setData(json);
+      })
+      .catch(() => setError("failed"))
+      .finally(() => setLoading(false));
+  }, []);
 
   if (loading) return (
     <>
@@ -153,10 +143,7 @@ export default function AIRecommendationsPage() {
           <CardContent className="p-10 flex flex-col items-center text-center">
             <AlertCircle className="w-10 h-10 text-red-400 mb-3" />
             <p className="font-medium text-slate-800">Couldn't generate recommendations</p>
-            <p className="text-sm text-slate-500 mt-1">Something went wrong. Try refreshing.</p>
-            <Button variant="outline" className="mt-4 gap-2" onClick={() => fetchRecs()}>
-              <RefreshCw className="w-4 h-4" /> Try Again
-            </Button>
+            <p className="text-sm text-slate-500 mt-1">Something went wrong. Please reload the page.</p>
           </CardContent>
         </Card>
       </main>
@@ -196,11 +183,6 @@ export default function AIRecommendationsPage() {
                   <div className="text-2xl font-bold">{data.categories.reduce((n, c) => n + c.items.filter(i => i.urgent).length, 0)}</div>
                   <div className="text-xs text-white/70">Urgent actions</div>
                 </div>
-                <button onClick={() => fetchRecs(true)} disabled={refreshing}
-                  className="ml-auto flex items-center gap-1.5 text-white/70 hover:text-white text-xs transition-colors">
-                  <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-                  {refreshing ? "Refreshing…" : "Refresh"}
-                </button>
               </div>
             </div>
           </div>

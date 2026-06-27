@@ -128,10 +128,13 @@ export default function CareerGPSPage() {
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    // Clear ai_recommendations so they regenerate for the new goal
     await supabase.from("student_profiles").upsert({
       id: user.id,
       career_goal: selectedGoal,
       custom_career_goal: selectedGoal === "custom" ? customGoal : null,
+      ai_recommendations: null,
+      ai_recommendations_at: null,
       updated_at: new Date().toISOString(),
     });
     setSaving(false);

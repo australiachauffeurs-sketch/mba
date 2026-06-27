@@ -112,11 +112,8 @@ function buildStaticRec(goal: string, name: string, goalLabel: string): AIRecomm
   return { ...base, studentName: name, goalLabel, generatedAt: new Date().toISOString(), isAIGenerated: false };
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const forceRefresh = searchParams.get("refresh") === "true";
-
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -136,8 +133,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "no_goal", message: "Student hasn't set a career goal yet" }, { status: 200 });
     }
 
-    // Return cached recommendations unless refresh is forced
-    if (!forceRefresh && sp?.ai_recommendations) {
+    // Return cached recommendations (only regenerate when goal changes, which clears this)
+    if (sp?.ai_recommendations) {
       const cached = sp.ai_recommendations as AIRecommendationsResponse;
       cached.studentName = name;
       cached.goalLabel = goalLabel;
