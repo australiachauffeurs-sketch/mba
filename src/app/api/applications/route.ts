@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
 export async function GET(req: Request) {
@@ -10,12 +10,15 @@ export async function GET(req: Request) {
   const opportunityId = searchParams.get("opportunity_id")
 
   if (opportunityId) {
+    // Alumni/poster viewing applicants for their opportunity
     const { data, error } = await supabase
       .from("applications")
       .select(`
         *,
-        applicant:applicant_id(full_name, role),
-        student_profile:applicant_id(program, specialization, career_goal, skills, gpa)
+        applicant:applicant_id(
+          id, full_name, role,
+          student_profiles(program, specialization, career_goal, skills, gpa)
+        )
       `)
       .eq("opportunity_id", opportunityId)
       .order("created_at", { ascending: false })
@@ -23,11 +26,12 @@ export async function GET(req: Request) {
     return NextResponse.json(data || [])
   }
 
+  // Student viewing their own applications
   const { data, error } = await supabase
     .from("applications")
     .select(`
       *,
-      opportunity:opportunity_id(title, company, type)
+      opportunity:opportunity_id(id, title, company, type, location)
     `)
     .eq("applicant_id", user.id)
     .order("created_at", { ascending: false })
