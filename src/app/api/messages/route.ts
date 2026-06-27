@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { sendEmail, newMessageEmail } from "@/lib/email"
+
+const PLATFORM_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://uniconnect.ai"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -9,18 +12,15 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   if (otherUserId) {
-    // Get thread between two users
     const { data } = await supabase
       .from("messages")
       .select("*")
       .or(`and(sender_id.eq.${user.id},recipient_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},recipient_id.eq.${user.id})`)
       .order("created_at", { ascending: true })
-    // Mark as read
     await supabase.from("messages").update({ read: true }).eq("recipient_id", user.id).eq("sender_id", otherUserId)
     return NextResponse.json(data || [])
   }
 
-  // Get all conversations (latest message per conversation partner)
   const { data: sent } = await supabase
     .from("messages")
     .select("*, recipient:recipient_id(id, full_name, role)")
@@ -34,7 +34,6 @@ export async function GET(request: Request) {
 
   type Partner = { id: string; full_name: string; role: string }
   type ConvEntry = { partner: Partner; lastMessage: string; lastAt: string; unread: number }
-
   const map = new Map<string, ConvEntry>()
 
   for (const m of (sent || [])) {
@@ -62,12 +61,36 @@ export async function POST(req: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   const { recipient_id, content } = await req.json()
   const { data, error } = await supabase
     .from("messages")
     .insert({ sender_id: user.id, recipient_id, content })
     .select()
     .single()
+
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  // Only email if this is the first unread message in the conversation
+  // (avoid spamming on every message in an active thread)
+  const { count } = await supabase
+    .from("messages")
+    .select("*", { count: "exact", head: true })
+    .eq("sender_id", user.id)
+    .eq("recipient_id", recipient_id)
+
+  if ((count ?? 0) <= 1) {
+    const [senderRes, recipientRes] = await Promise.all([
+      supabase.from("profiles").select("full_name").eq("id", user.id).single(),
+      supabase.from("profiles").select("email").eq("id", recipient_id).single(),
+    ])
+    const senderName = senderRes.data?.full_name ?? "Someone"
+    const recipientEmail = recipientRes.data?.email
+    if (recipientEmail) {
+      const { subject, html } = newMessageEmail(senderName, content, PLATFORM_URL)
+      await sendEmail({ to: recipientEmail, subject, html })
+    }
+  }
+
   return NextResponse.json(data)
 }

@@ -95,12 +95,12 @@ export default function MentorsPage() {
     if (!currentUserId || requested[mentorId]) return
     setRequesting((prev) => ({ ...prev, [mentorId]: true }))
     try {
-      const { error } = await supabase.from("mentor_sessions").insert({
-        mentor_id: mentorId,
-        mentee_id: currentUserId,
-        topic: "General mentoring",
+      const res = await fetch("/api/mentor-sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mentor_id: mentorId, topic: "General mentoring" }),
       })
-      if (!error) {
+      if (res.ok) {
         setRequested((prev) => ({ ...prev, [mentorId]: true }))
       }
     } finally {
