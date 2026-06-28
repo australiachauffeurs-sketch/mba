@@ -204,7 +204,7 @@ export default function CareerGPSPage() {
       const [spRes, updRes] = await Promise.all([
         supabase.from("student_profiles")
           .select("career_goal, custom_career_goal, career_roadmap")
-          .eq("id", user.id).single(),
+          .eq("profile_id", user.id).single(),
         supabase.from("career_gps_updates")
           .select("*")
           .eq("student_id", user.id)
@@ -239,14 +239,13 @@ export default function CareerGPSPage() {
     if (!user) return;
 
     await supabase.from("student_profiles").upsert({
-      id: user.id,
+      profile_id: user.id,
       career_goal: selectedGoal,
       custom_career_goal: selectedGoal === "custom" ? customGoal : null,
       ai_recommendations: null,
       ai_recommendations_at: null,
       career_roadmap: null,
       career_roadmap_at: null,
-      updated_at: new Date().toISOString(),
     });
 
     setRoadmap(null);

@@ -121,7 +121,7 @@ export async function GET() {
     // Fetch profile data (include cached recs)
     const [{ data: profile }, { data: sp }] = await Promise.all([
       supabase.from("profiles").select("full_name, bio").eq("id", user.id).single(),
-      supabase.from("student_profiles").select("program, specialization, career_goal, custom_career_goal, skills, career_interests, interests, looking_for, work_experience, gpa, batch_year, ai_recommendations, ai_recommendations_at").eq("id", user.id).single(),
+      supabase.from("student_profiles").select("program, specialization, career_goal, custom_career_goal, skills, career_interests, interests, looking_for, work_experience, gpa, batch_year, ai_recommendations, ai_recommendations_at").eq("profile_id", user.id).single(),
     ]);
 
     const name = profile?.full_name?.split(" ")[0] || "Student";
@@ -150,7 +150,7 @@ export async function GET() {
       await supabase.from("student_profiles").update({
         ai_recommendations: staticRec,
         ai_recommendations_at: new Date().toISOString(),
-      }).eq("id", user.id);
+      }).eq("profile_id", user.id);
       return NextResponse.json(staticRec);
     }
 
@@ -226,7 +226,7 @@ Rules:
     await supabase.from("student_profiles").update({
       ai_recommendations: result,
       ai_recommendations_at: result.generatedAt,
-    }).eq("id", user.id);
+    }).eq("profile_id", user.id);
 
     return NextResponse.json(result);
   } catch (err) {

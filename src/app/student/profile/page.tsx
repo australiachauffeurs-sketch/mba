@@ -123,7 +123,7 @@ export default function StudentProfilePage() {
         setBio(p.bio || "");
       }
 
-      const { data: sp } = await supabase.from("student_profiles").select("*").eq("id", user.id).single();
+      const { data: sp } = await supabase.from("student_profiles").select("*").eq("profile_id", user.id).single();
       if (sp) {
         setRollNumber(sp.roll_number || "");
         setBatchNumber(sp.batch_number || "");
@@ -166,7 +166,7 @@ export default function StudentProfilePage() {
     });
 
     const { error: e2 } = await supabase.from("student_profiles").upsert({
-      id: userId,
+      profile_id: userId,
       roll_number: rollNumber,
       batch_number: batchNumber,
       batch_year: batchYear ? parseInt(batchYear) : null,

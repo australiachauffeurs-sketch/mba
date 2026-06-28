@@ -10,7 +10,7 @@ export default async function StudentDashboard() {
   const { data: { user } } = await supabase.auth.getUser();
   const [{ data: profile }, { data: sp }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user!.id).single(),
-    supabase.from("student_profiles").select("career_goal").eq("id", user!.id).single(),
+    supabase.from("student_profiles").select("career_goal").eq("profile_id", user!.id).single(),
   ]);
   const firstName = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
   const hasGoal = !!sp?.career_goal;

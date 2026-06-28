@@ -97,7 +97,7 @@ export async function GET() {
       supabase.from("profiles").select("full_name, bio").eq("id", user.id).single(),
       supabase.from("student_profiles")
         .select("program, specialization, career_goal, custom_career_goal, skills, career_interests, interests, work_experience, gpa, batch_year, career_roadmap, career_roadmap_at")
-        .eq("id", user.id).single(),
+        .eq("profile_id", user.id).single(),
     ])
 
     if (!sp?.career_goal) {
@@ -195,7 +195,7 @@ export async function GET() {
       await supabase.from("student_profiles").update({
         career_roadmap: fallback,
         career_roadmap_at: fallback.generatedAt,
-      }).eq("id", user.id)
+      }).eq("profile_id", user.id)
       return NextResponse.json(fallback)
     }
 
@@ -288,7 +288,7 @@ ${facultyContext || "No faculty data available"}`
     await supabase.from("student_profiles").update({
       career_roadmap: roadmap,
       career_roadmap_at: roadmap.generatedAt,
-    }).eq("id", user.id)
+    }).eq("profile_id", user.id)
 
     return NextResponse.json(roadmap)
   } catch (err) {
@@ -308,7 +308,7 @@ export async function DELETE() {
       career_roadmap: null,
       career_roadmap_at: null,
       ai_enriched_at: null,
-    }).eq("id", user.id)
+    }).eq("profile_id", user.id)
 
     return NextResponse.json({ cleared: true })
   } catch {
