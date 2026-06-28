@@ -31,6 +31,7 @@ export function getRoleBadgeColor(role: string) {
     faculty: "bg-green-500",
     investor: "bg-amber-500",
     admin: "bg-slate-500",
+    organisation: "bg-teal-500",
   };
   return colors[role] ?? "bg-gray-500";
 }

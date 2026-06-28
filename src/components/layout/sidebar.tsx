@@ -9,7 +9,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import {
   LayoutDashboard, Users, Sparkles, MessageSquare, TrendingUp, Settings,
   BookOpen, Briefcase, DollarSign, BarChart3, Bell, LogOut, UserCircle,
-  Calendar, Handshake,
+  Calendar, Handshake, Building2, PlusCircle, ClipboardList,
 } from "lucide-react";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; }
@@ -63,10 +63,19 @@ const navByRole: Record<UserRole, NavItem[]> = {
     { label: "Reports", href: "/admin/reports", icon: TrendingUp },
     { label: "Settings", href: "/admin/settings", icon: Settings },
   ],
+  organisation: [
+    { label: "Dashboard", href: "/organisation", icon: LayoutDashboard },
+    { label: "My Profile", href: "/organisation/profile", icon: Building2 },
+    { label: "Events", href: "/organisation/events", icon: Calendar },
+    { label: "Opportunities", href: "/organisation/opportunities", icon: Briefcase },
+    { label: "Applications", href: "/organisation/applications", icon: ClipboardList },
+    { label: "Post New", href: "/organisation/post", icon: PlusCircle },
+    { label: "Messages", href: "/organisation/messages", icon: MessageSquare },
+  ],
 };
 
 const roleLabel: Record<UserRole, string> = {
-  student: "Student", alumni: "Alumni", faculty: "Faculty", investor: "Investor", admin: "Admin",
+  student: "Student", alumni: "Alumni", faculty: "Faculty", investor: "Investor", admin: "Admin", organisation: "Organisation",
 };
 
 interface SidebarProps { role: UserRole; userName: string; userEmail?: string; }

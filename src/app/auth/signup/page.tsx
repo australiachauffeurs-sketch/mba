@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GraduationCap, Briefcase, BookOpen, TrendingUp, ArrowRight, ArrowLeft } from "lucide-react";
+import { GraduationCap, Briefcase, BookOpen, TrendingUp, Building2, ArrowRight, ArrowLeft } from "lucide-react";
 
 const roles = [
   {
@@ -44,6 +44,16 @@ const roles = [
     bg: "bg-amber-50",
     border: "border-amber-200 hover:border-amber-400",
     perks: ["Access MBA founder deals", "Thesis-matched deal flow", "Warm intro network"],
+  },
+  {
+    id: "organisation",
+    label: "Organisation / Club",
+    description: "Company, club, NGO, or institution",
+    icon: Building2,
+    color: "text-teal-600",
+    bg: "bg-teal-50",
+    border: "border-teal-200 hover:border-teal-400",
+    perks: ["Post jobs & internships", "Host events & workshops", "Reach MBA talent"],
   },
 ];
 

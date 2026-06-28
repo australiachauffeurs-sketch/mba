@@ -25,7 +25,7 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const protectedPrefixes = ["/student", "/alumni", "/faculty", "/investor", "/admin"];
+  const protectedPrefixes = ["/student", "/alumni", "/faculty", "/investor", "/admin", "/organisation"];
   const isProtected = protectedPrefixes.some((p) => pathname.startsWith(p));
   const isAuthPage = pathname.startsWith("/auth") && !pathname.startsWith("/auth/callback");
 
