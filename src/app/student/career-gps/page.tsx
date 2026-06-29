@@ -169,6 +169,7 @@ export default function CareerGPSPage() {
   const [customGoal, setCustomGoal] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [roadmap, setRoadmap] = useState<CareerRoadmap | null>(null);
   const [roadmapLoading, setRoadmapLoading] = useState(false);
@@ -235,31 +236,48 @@ export default function CareerGPSPage() {
 
   async function handleSave() {
     setSaving(true);
+    setSaveError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setSaveError("You're not signed in. Please refresh and log in again.");
+        return;
+      }
 
+      // Minimal payload — only the goal columns that are guaranteed to exist.
+      // Clearing the cached roadmap is done separately so a missing optional
+      // column can never block the core save.
       const { error } = await supabase.from("student_profiles").upsert(
         {
           profile_id: user.id,
           career_goal: selectedGoal,
           custom_career_goal: selectedGoal === "custom" ? customGoal : null,
-          ai_recommendations: null,
-          ai_recommendations_at: null,
-          career_roadmap: null,
-          career_roadmap_at: null,
         },
         { onConflict: "profile_id" }
       );
 
       if (error) {
         console.error("Career GPS save error:", error);
+        setSaveError(error.message || "Could not save your goal. Please try again.");
         return;
       }
+
+      // Best-effort: clear any cached roadmap so a fresh one regenerates.
+      // If these columns don't exist in the DB yet, ignore the error —
+      // the goal is already saved and the roadmap will still generate.
+      await supabase.from("student_profiles").update({
+        career_roadmap: null,
+        career_roadmap_at: null,
+        ai_recommendations: null,
+        ai_recommendations_at: null,
+      }).eq("profile_id", user.id);
 
       setRoadmap(null);
       setRoadmapAttempted(false);
       setStep("roadmap");
+    } catch (err) {
+      console.error("Career GPS save exception:", err);
+      setSaveError(err instanceof Error ? err.message : "Unexpected error. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -357,6 +375,12 @@ export default function CareerGPSPage() {
                     autoFocus
                   />
                   <p className="text-xs text-indigo-600">Be specific — AI uses this to tailor your roadmap and surface the right connections.</p>
+                </div>
+              )}
+
+              {saveError && (
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
+                  <span className="font-semibold">Couldn&apos;t save your goal:</span> {saveError}
                 </div>
               )}
 
