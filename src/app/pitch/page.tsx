@@ -161,7 +161,7 @@ export default function PitchPage() {
       {/* ══════════════════════════════════════
           SLIDE 1 — OPENING HOOK
       ══════════════════════════════════════ */}
-      <section className="relative pt-14 min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 overflow-hidden">
+      <section className="relative pt-14 min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-16 overflow-hidden">
         {/* Soft gradient bg */}
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-violet-50" />
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-indigo-100/60 rounded-full blur-[100px]" />
@@ -169,7 +169,7 @@ export default function PitchPage() {
         <div className="relative max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-indigo-600 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-8 shadow-lg shadow-indigo-200">
             <Sparkles className="w-3.5 h-3.5" />
-            A message for the ED of MBA Department
+            A message for the Department ED&apos;s &amp; Admins
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[1.05] mb-6 tracking-tight text-slate-900">
