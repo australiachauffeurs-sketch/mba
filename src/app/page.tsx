@@ -61,11 +61,11 @@ export default function HomePage() {
             <Link href="/auth/signup" className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
               Get Started <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/guide" className="inline-flex items-center gap-2 border border-indigo-300 text-indigo-700 bg-indigo-50 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-100 transition-colors">
-              <Star className="w-4 h-4" /> Platform Guide
+            <Link href="/for-students" className="inline-flex items-center gap-2 border border-indigo-300 text-indigo-700 bg-indigo-50 px-6 py-3 rounded-xl font-semibold hover:bg-indigo-100 transition-colors">
+              <Users className="w-4 h-4" /> For Students
             </Link>
-            <Link href="/admin" className="inline-flex items-center gap-2 border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 transition-colors">
-              <Building2 className="w-4 h-4" /> University Demo
+            <Link href="/guide" className="inline-flex items-center gap-2 border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 transition-colors">
+              <Star className="w-4 h-4" /> Platform Guide
             </Link>
           </div>
           <div className="mt-16 grid grid-cols-4 gap-6 max-w-3xl mx-auto">
