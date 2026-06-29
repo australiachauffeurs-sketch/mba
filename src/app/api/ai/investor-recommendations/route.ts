@@ -33,7 +33,7 @@ export async function GET() {
 
     const [{ data: profile }, { data: ip }] = await Promise.all([
       supabase.from("profiles").select("full_name, bio").eq("id", user.id).single(),
-      supabase.from("investor_profiles").select("investor_type, firm_name, sectors, stage_focus, check_size_range, thesis_description, geographies, ai_recommendations, ai_recommendations_at").eq("id", user.id).single(),
+      supabase.from("investor_profiles").select("firm, industries, stage_focus, check_size_min, check_size_max, thesis_description, geographies, ai_recommendations, ai_recommendations_at").eq("profile_id", user.id).single(),
     ]);
 
     // Return cached recommendations if available
@@ -44,12 +44,15 @@ export async function GET() {
     const apiKey = process.env.OPENAI_API_KEY;
     const hasValidKey = apiKey && apiKey.length > 10 && !apiKey.startsWith("sk-placeholder");
 
-    const sectorsStr = (ip?.sectors || []).join(", ") || "your focus sectors";
+    const sectorsStr = (ip?.industries || []).join(", ") || "your focus sectors";
     const stageFocusStr = (ip?.stage_focus || []).join(", ") || "early stage";
-    const firmLabel = ip?.firm_name || "your firm";
+    const firmLabel = ip?.firm || "your firm";
+    const checkSizeLabel = ip?.check_size_min && ip?.check_size_max
+      ? `$${ip.check_size_min}k–$${ip.check_size_max}k`
+      : ip?.check_size_min ? `$${ip.check_size_min}k+` : "Not specified";
 
     const staticRec: AIRecommendationsResult = {
-      insight: `You're ${ip?.investor_type === "angel" ? "an angel investor" : `a ${ip?.investor_type || "venture"} investor`} at ${firmLabel} focused on ${sectorsStr}. UniConnect identified ${stageFocusStr} founders building in your thesis areas, co-investors with overlapping mandates, and research with near-term commercial potential.`,
+      insight: `You're an investor at ${firmLabel} focused on ${sectorsStr}. UniConnect identified ${stageFocusStr} founders building in your thesis areas, co-investors with overlapping mandates, and research with near-term commercial potential.`,
       categories: [
         {
           type: "startups",
@@ -59,7 +62,7 @@ export async function GET() {
             {
               title: `${stageFocusStr.split(",")[0].trim()} Startups in ${sectorsStr.split(",")[0].trim()}`,
               description: `MBA student and alumni-founded companies in ${sectorsStr} currently raising their first or second round`,
-              why: `Your ${ip?.check_size_range || "investment"} check size and ${sectorsStr} focus make you the ideal lead or follow investor for these teams`,
+              why: `Your ${checkSizeLabel} check size and ${sectorsStr} focus make you the ideal lead or follow investor for these teams`,
               tags: [stageFocusStr.split(",")[0].trim(), sectorsStr.split(",")[0].trim(), "Raising"],
               action: "View Deal Flow",
               urgent: true,
@@ -101,7 +104,7 @@ export async function GET() {
           emoji: "🤝",
           items: [
             {
-              title: `Other ${ip?.investor_type === "angel" ? "Angels" : "Funds"} with Overlapping Thesis`,
+              title: `Investors with Overlapping Thesis`,
               description: `Investors in the UniConnect network focused on ${sectorsStr} at similar stages looking to co-invest`,
               why: "Syndicate partners with thesis alignment share deal flow, reduce concentration risk, and bring complementary value-add to portfolio companies",
               tags: ["Syndicate", "Co-invest", sectorsStr.split(",")[0].trim()],
@@ -133,18 +136,17 @@ export async function GET() {
         await supabase.from("investor_profiles").update({
           ai_recommendations: staticRec,
           ai_recommendations_at: staticRec.generatedAt,
-        }).eq("id", user.id);
+        }).eq("profile_id", user.id);
       } catch (_) { /* ignore save failure */ }
       return NextResponse.json(staticRec);
     }
 
     const context = [
       `Name: ${profile?.full_name || "Unknown"}`,
-      `Investor Type: ${ip?.investor_type || "Not specified"}`,
       `Firm: ${firmLabel}`,
-      `Sectors: ${sectorsStr}`,
+      `Sectors / Industries: ${sectorsStr}`,
       `Stage Focus: ${stageFocusStr}`,
-      `Check Size Range: ${ip?.check_size_range || "Not specified"}`,
+      `Check Size: ${checkSizeLabel}`,
       `Geographies: ${(ip?.geographies || []).join(", ") || "Not specified"}`,
       `Investment Thesis: ${ip?.thesis_description || "Not specified"}`,
       `Bio: ${profile?.bio || "Not specified"}`,
@@ -172,7 +174,7 @@ export async function GET() {
       await supabase.from("investor_profiles").update({
         ai_recommendations: result,
         ai_recommendations_at: result.generatedAt,
-      }).eq("id", user.id);
+      }).eq("profile_id", user.id);
     } catch (_) { /* ignore save failure */ }
 
     return NextResponse.json(result);

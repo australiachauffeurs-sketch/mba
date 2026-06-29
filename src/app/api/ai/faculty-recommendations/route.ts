@@ -33,7 +33,7 @@ export async function GET() {
 
     const [{ data: profile }, { data: fp }] = await Promise.all([
       supabase.from("profiles").select("full_name, bio").eq("id", user.id).single(),
-      supabase.from("faculty_profiles").select("department, designation, research_areas, publications_count, h_index, collaboration, ai_recommendations, ai_recommendations_at").eq("id", user.id).single(),
+      supabase.from("faculty_profiles").select("department, title, research_areas, open_to_collaboration, ai_recommendations, ai_recommendations_at").eq("profile_id", user.id).single(),
     ]);
 
     // Return cached recommendations if available
@@ -47,7 +47,7 @@ export async function GET() {
     const researchAreasStr = (fp?.research_areas || []).join(", ") || "your research areas";
 
     const staticRec: AIRecommendationsResult = {
-      insight: `You're a ${fp?.designation || "faculty member"} in ${fp?.department || "your department"} with ${fp?.publications_count || "several"} publications. UniConnect is surfacing students whose interests align with your research, industry partners, and grant opportunities to advance your work.`,
+      insight: `You're a ${fp?.title || "faculty member"} in ${fp?.department || "your department"}. UniConnect is surfacing students whose interests align with your research, industry partners, and grant opportunities to advance your work.`,
       categories: [
         {
           type: "students",
@@ -79,7 +79,7 @@ export async function GET() {
             {
               title: "Government Research Grants in Your Domain",
               description: `Active funding cycles from NSF, NIH, or domain-specific agencies aligned with ${researchAreasStr}`,
-              why: `Your publication record (h-index: ${fp?.h_index || "N/A"}) and focus area position you well for competitive grant applications in this cycle`,
+              why: `Your focus on ${researchAreasStr} and track record position you well for competitive grant applications in this cycle`,
               tags: ["Grant", "NSF", "Funding"],
               action: "Explore Grants",
               urgent: true,
@@ -138,19 +138,17 @@ export async function GET() {
         await supabase.from("faculty_profiles").update({
           ai_recommendations: staticRec,
           ai_recommendations_at: staticRec.generatedAt,
-        }).eq("id", user.id);
+        }).eq("profile_id", user.id);
       } catch (_) { /* ignore save failure */ }
       return NextResponse.json(staticRec);
     }
 
     const context = [
       `Name: ${profile?.full_name || "Unknown"}`,
-      `Designation: ${fp?.designation || "Not specified"}`,
+      `Title: ${fp?.title || "Not specified"}`,
       `Department: ${fp?.department || "Not specified"}`,
       `Research Areas: ${researchAreasStr}`,
-      `Publications Count: ${fp?.publications_count || "Not specified"}`,
-      `H-Index: ${fp?.h_index || "Not specified"}`,
-      `Open to Collaboration: ${fp?.collaboration ? "Yes" : "No"}`,
+      `Open to Collaboration: ${fp?.open_to_collaboration ? "Yes" : "No"}`,
       `Bio: ${profile?.bio || "Not specified"}`,
     ].join("\n");
 
@@ -176,7 +174,7 @@ export async function GET() {
       await supabase.from("faculty_profiles").update({
         ai_recommendations: result,
         ai_recommendations_at: result.generatedAt,
-      }).eq("id", user.id);
+      }).eq("profile_id", user.id);
     } catch (_) { /* ignore save failure */ }
 
     return NextResponse.json(result);

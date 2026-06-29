@@ -33,7 +33,7 @@ export async function GET() {
 
     const [{ data: profile }, { data: sp }] = await Promise.all([
       supabase.from("profiles").select("full_name, bio").eq("id", user.id).single(),
-      supabase.from("alumni_profiles").select("company, job_title, industry, expertise_areas, open_to_mentor, open_to_hire, batch_year, program, ai_recommendations, ai_recommendations_at").eq("id", user.id).single(),
+      supabase.from("alumni_profiles").select("company, job_title, industry, expertise_areas, open_to_mentor, graduation_year, ai_recommendations, ai_recommendations_at").eq("profile_id", user.id).single(),
     ]);
 
     // Return cached recommendations if available
@@ -80,7 +80,7 @@ export async function GET() {
               why: `Your journey into ${sp?.industry || "your field"} is exactly what these students need to map their own path`,
               tags: ["Mentoring", "Career", sp?.industry || "Industry"],
               action: "Accept Mentees",
-              urgent: sp?.open_to_mentor === true,
+              urgent: sp?.open_to_mentor ?? false,
             },
           ],
         },
@@ -122,7 +122,7 @@ export async function GET() {
         await supabase.from("alumni_profiles").update({
           ai_recommendations: staticRec,
           ai_recommendations_at: staticRec.generatedAt,
-        }).eq("id", user.id);
+        }).eq("profile_id", user.id);
       } catch (_) { /* ignore save failure */ }
       return NextResponse.json(staticRec);
     }
@@ -135,9 +135,7 @@ export async function GET() {
       `Industry: ${sp?.industry || "Not specified"}`,
       `Expertise Areas: ${(sp?.expertise_areas || []).join(", ") || "Not specified"}`,
       `Open to Mentor: ${sp?.open_to_mentor ? "Yes" : "No"}`,
-      `Open to Hire: ${sp?.open_to_hire ? "Yes" : "No"}`,
-      `Batch Year: ${sp?.batch_year || "Not specified"}`,
-      `Program: ${sp?.program || "MBA"}`,
+      `Graduation Year: ${sp?.graduation_year || "Not specified"}`,
       `Bio: ${profile?.bio || "Not specified"}`,
     ].join("\n");
 
@@ -163,7 +161,7 @@ export async function GET() {
       await supabase.from("alumni_profiles").update({
         ai_recommendations: result,
         ai_recommendations_at: result.generatedAt,
-      }).eq("id", user.id);
+      }).eq("profile_id", user.id);
     } catch (_) { /* ignore save failure */ }
 
     return NextResponse.json(result);
