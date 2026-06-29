@@ -235,23 +235,34 @@ export default function CareerGPSPage() {
 
   async function handleSave() {
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    await supabase.from("student_profiles").upsert({
-      profile_id: user.id,
-      career_goal: selectedGoal,
-      custom_career_goal: selectedGoal === "custom" ? customGoal : null,
-      ai_recommendations: null,
-      ai_recommendations_at: null,
-      career_roadmap: null,
-      career_roadmap_at: null,
-    });
+      const { error } = await supabase.from("student_profiles").upsert(
+        {
+          profile_id: user.id,
+          career_goal: selectedGoal,
+          custom_career_goal: selectedGoal === "custom" ? customGoal : null,
+          ai_recommendations: null,
+          ai_recommendations_at: null,
+          career_roadmap: null,
+          career_roadmap_at: null,
+        },
+        { onConflict: "profile_id" }
+      );
 
-    setRoadmap(null);
-    setRoadmapAttempted(false);
-    setSaving(false);
-    setStep("roadmap");
+      if (error) {
+        console.error("Career GPS save error:", error);
+        return;
+      }
+
+      setRoadmap(null);
+      setRoadmapAttempted(false);
+      setStep("roadmap");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const goalMeta = CAREER_GOALS.find(g => g.id === selectedGoal);
