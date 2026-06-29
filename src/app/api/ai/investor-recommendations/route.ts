@@ -42,7 +42,7 @@ export async function GET() {
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
-    const hasValidKey = apiKey && apiKey.length > 10 && !apiKey.startsWith("sk-placeholder");
+    const hasValidKey = !!apiKey && apiKey.startsWith("sk-") && apiKey.length > 20;
 
     const sectorsStr = (ip?.industries || []).join(", ") || "your focus sectors";
     const stageFocusStr = (ip?.stage_focus || []).join(", ") || "early stage";

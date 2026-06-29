@@ -62,7 +62,7 @@ export async function POST(req: Request) {
   const introducer = myRes.data as { full_name: string | null; role: string | null } | null
 
   const apiKey = process.env.OPENAI_API_KEY
-  const hasKey = apiKey && apiKey.length > 10 && !apiKey.startsWith("sk-placeholder")
+  const hasKey = !!apiKey && apiKey.startsWith("sk-") && apiKey.length > 20
 
   if (!hasKey || !personA || !personB) {
     return NextResponse.json({

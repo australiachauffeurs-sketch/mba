@@ -42,7 +42,7 @@ export async function GET() {
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
-    const hasValidKey = apiKey && apiKey.length > 10 && !apiKey.startsWith("sk-placeholder");
+    const hasValidKey = !!apiKey && apiKey.startsWith("sk-") && apiKey.length > 20;
 
     const staticRec: AIRecommendationsResult = {
       insight: `You're a ${sp?.job_title || "professional"} at ${sp?.company || "your company"}. UniConnect found students who match your hiring profile, early-career founders in your space, and research collaborations relevant to your expertise.`,

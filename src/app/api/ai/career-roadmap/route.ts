@@ -188,7 +188,9 @@ export async function GET() {
     }).join("\n")
 
     const apiKey = process.env.OPENAI_API_KEY
-    const hasValidKey = apiKey && apiKey.length > 10 && !apiKey.startsWith("sk-placeholder")
+    // Real OpenAI keys start with "sk-". This rejects placeholders like
+    // "your-openai-api-key" that would otherwise trigger a failing API call.
+    const hasValidKey = !!apiKey && apiKey.startsWith("sk-") && apiKey.length > 20
 
     if (!hasValidKey) {
       const fallback = buildStaticRoadmap(goal)
