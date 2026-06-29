@@ -250,28 +250,28 @@ export default function HomePage() {
       </section>
 
       {/* ── 5 Role Cards ── */}
-      <section className="bg-slate-950 py-20">
+      <section className="bg-gradient-to-b from-slate-50 to-white py-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
-            <span className="inline-block text-xs font-bold uppercase tracking-widest text-slate-400 bg-white/5 border border-white/10 px-3 py-1 rounded-full mb-3">5 Roles</span>
-            <h2 className="text-3xl font-bold text-white mb-3">One platform. Every stakeholder.</h2>
-            <p className="text-slate-400 max-w-xl mx-auto">Each role gets its own AI-powered dashboard, agent, and experience — tailored from day one.</p>
+            <span className="inline-block text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full mb-3">5 Roles</span>
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">One platform. Every stakeholder.</h2>
+            <p className="text-slate-500 max-w-xl mx-auto">Each role gets its own AI-powered dashboard, agent, and experience — tailored from day one.</p>
           </div>
           <div className="grid md:grid-cols-5 gap-4">
             {roles.map((r) => {
               const Icon = r.icon;
               return (
-                <div key={r.label} className="group bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 hover:border-white/20 transition-all flex flex-col">
-                  <div className="mb-4">
+                <div key={r.label} className={`group ${r.bg} border ${r.border} rounded-2xl p-5 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col`}>
+                  <div className="mb-3">
                     <span className="text-2xl">{r.emoji}</span>
                   </div>
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full mb-3 self-start ${r.pill}`}>{r.label}</span>
-                  <h3 className="font-semibold text-white text-sm mb-2 leading-snug">{r.headline}</h3>
-                  <p className="text-slate-400 text-xs leading-relaxed mb-4 flex-1">{r.description}</p>
+                  <h3 className={`font-semibold ${r.text} text-sm mb-2 leading-snug`}>{r.headline}</h3>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-4 flex-1">{r.description}</p>
                   <ul className="space-y-1.5 mb-5">
                     {r.features.map(f => (
-                      <li key={f} className="flex items-center gap-1.5 text-xs text-slate-300">
-                        <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
+                      <li key={f} className="flex items-center gap-1.5 text-xs text-slate-600">
+                        <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
                         {f}
                       </li>
                     ))}
@@ -280,7 +280,7 @@ export default function HomePage() {
                     <Link href={r.href} className={`flex-1 text-center text-xs font-semibold py-2 rounded-lg ${r.badge} text-white hover:opacity-90 transition`}>
                       Sign Up
                     </Link>
-                    <Link href={r.portal} className="px-3 py-2 rounded-lg bg-white/10 text-white text-xs hover:bg-white/20 transition">
+                    <Link href={r.portal} className={`px-3 py-2 rounded-lg border ${r.border} ${r.text} text-xs hover:opacity-80 transition`}>
                       <ChevronRight className="w-3 h-3" />
                     </Link>
                   </div>
@@ -402,7 +402,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-6 relative">
             {[
               { step: "01", title: "Pick your role", desc: "Choose Student, Alumni, Faculty, Investor, or Organisation and complete your profile in under 3 minutes.", icon: Users, color: "indigo" },
-              { step: "02", title: "Set your goal or focus", desc: "Students set a career goal to activate Career GPS. Alumni toggle open-to-mentor. Investors input their thesis. Everyone's AI activates.", icon: Target ?? MapPin, color: "violet" },
+              { step: "02", title: "Set your goal or focus", desc: "Students set a career goal to activate Career GPS. Alumni toggle open-to-mentor. Investors input their thesis. Everyone's AI activates.", icon: MapPin, color: "violet" },
               { step: "03", title: "Let the AI work", desc: "Check your AI Advisor for matches. Wake up to new Career GPS additions each morning. Request intros. Apply. Connect.", icon: Zap, color: "rose" },
             ].map((s, i) => {
               const Icon = s.icon;
@@ -427,7 +427,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 py-24 text-white text-center">
+      <section className="bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 py-24 text-white text-center">
         <div className="max-w-2xl mx-auto px-6">
           <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Sparkles className="w-7 h-7 text-white" />
@@ -437,10 +437,10 @@ export default function HomePage() {
             Join thousands of students, alumni, faculty, and investors on the only AI-native platform built for university ecosystems.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/auth/signup" className="bg-indigo-500 hover:bg-indigo-400 text-white font-bold px-8 py-4 rounded-xl transition text-sm flex items-center justify-center gap-2">
+            <Link href="/auth/signup" className="bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-8 py-4 rounded-xl transition text-sm flex items-center justify-center gap-2">
               Create Free Account <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/guide" className="border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition text-sm flex items-center justify-center gap-2">
+            <Link href="/guide" className="border border-white/30 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition text-sm flex items-center justify-center gap-2">
               <Star className="w-4 h-4" /> Read the Platform Guide
             </Link>
           </div>
