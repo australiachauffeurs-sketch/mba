@@ -291,6 +291,25 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Example AI Insight ── */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-10 text-white">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-5 h-5" />
+              <span className="text-sm font-medium opacity-80">Example AI Insight</span>
+            </div>
+            <blockquote className="text-2xl font-medium leading-relaxed mb-6">
+              &ldquo;You want to become a fintech founder. <strong>Three alumni</strong> built fintech companies, <strong>two investors</strong> in the network invest in fintech, and <strong>one professor</strong> is researching digital payments. The system has automatically introduced all five.&rdquo;
+            </blockquote>
+            <div className="flex items-center gap-3">
+              <Star className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+              <span className="text-sm opacity-90">Proactive AI — not a search bar, but an intelligent advocate for every student.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── AI Agents ── */}
       <section className="py-20 bg-gradient-to-b from-white to-slate-50">
         <div className="max-w-6xl mx-auto px-6">
@@ -369,25 +388,6 @@ export default function HomePage() {
           <Link href="/for-students" className="flex-shrink-0 bg-white text-indigo-700 font-semibold px-6 py-3 rounded-xl hover:bg-indigo-50 transition text-sm flex items-center gap-2 whitespace-nowrap">
             See Student Benefits <ArrowRight className="w-4 h-4" />
           </Link>
-        </div>
-      </section>
-
-      {/* ── Example AI Insight (unchanged) ── */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-10 text-white">
-          <div className="max-w-3xl">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5" />
-              <span className="text-sm font-medium opacity-80">Example AI Insight</span>
-            </div>
-            <blockquote className="text-2xl font-medium leading-relaxed mb-6">
-              &ldquo;You want to become a fintech founder. <strong>Three alumni</strong> built fintech companies, <strong>two investors</strong> in the network invest in fintech, and <strong>one professor</strong> is researching digital payments. The system has automatically introduced all five.&rdquo;
-            </blockquote>
-            <div className="flex items-center gap-3">
-              <Star className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-              <span className="text-sm opacity-90">Proactive AI — not a search bar, but an intelligent advocate for every student.</span>
-            </div>
-          </div>
         </div>
       </section>
 
